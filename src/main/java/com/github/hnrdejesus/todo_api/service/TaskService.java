@@ -1,5 +1,7 @@
 package com.github.hnrdejesus.todo_api.service;
 
+import com.github.hnrdejesus.todo_api.exception.DuplicateTaskException;
+import com.github.hnrdejesus.todo_api.exception.TaskNotFoundException;
 import com.github.hnrdejesus.todo_api.model.Task;
 import com.github.hnrdejesus.todo_api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -81,18 +83,17 @@ public class TaskService {
      *
      * @param task The task to create
      * @return The persisted task with generated ID
-     * @throws IllegalArgumentException if a task with the same title already exists
+     * @throws DuplicateTaskException if a task with the same title already exists
      */
     @Transactional
     public Task create(Task task) {
-        // Enforce unique title constraint
+
         if (taskRepository.existsByTitle(task.getTitle())) {
-            throw new IllegalArgumentException(
+            throw new DuplicateTaskException(
                     "Task with title '" + task.getTitle() + "' already exists"
             );
         }
 
-        // Initialize new tasks as incomplete
         task.setCompleted(false);
 
         return taskRepository.save(task);
@@ -105,16 +106,14 @@ public class TaskService {
      * @param id The ID of the task to update
      * @param updatedTask The task object containing the new values
      * @return The updated task
-     * @throws IllegalArgumentException if the task is not found
+     * @throws TaskNotFoundException if the task is not found
      */
     @Transactional
     public Task update(Long id, Task updatedTask) {
-        Task existingTask = taskRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Task with id " + id + " not found"
-                ));
 
-        // Update all mutable fields
+        Task existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+
         existingTask.setTitle(updatedTask.getTitle());
         existingTask.setDescription(updatedTask.getDescription());
         existingTask.setCompleted(updatedTask.getCompleted());
@@ -128,16 +127,14 @@ public class TaskService {
      *
      * @param id The ID of the task to toggle
      * @return The updated task
-     * @throws IllegalArgumentException if the task is not found
+     * @throws TaskNotFoundException if the task is not found
      */
     @Transactional
     public Task toggleCompleted(Long id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Task with id " + id + " not found"
-                ));
 
-        // Invert current completion status
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+
         task.setCompleted(!task.getCompleted());
 
         return taskRepository.save(task);
@@ -147,15 +144,13 @@ public class TaskService {
      * Permanently deletes a task from the system.
      *
      * @param id The ID of the task to delete
-     * @throws IllegalArgumentException if the task is not found
+     * @throws TaskNotFoundException if the task is not found
      */
     @Transactional
     public void delete(Long id) {
-        // Validate existence before deletion
+
         if (!taskRepository.existsById(id)) {
-            throw new IllegalArgumentException(
-                    "Task with id " + id + " not found"
-            );
+            throw new TaskNotFoundException(id);
         }
 
         taskRepository.deleteById(id);
