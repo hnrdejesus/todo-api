@@ -9,6 +9,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO for updating existing tasks.
+ * Requires all fields to be provided, including the completion status.
+ * Used for full task updates via PUT requests.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,6 +30,12 @@ public class TaskUpdateDTO {
     @NotNull(message = "Completed status is required")
     private Boolean completed;
 
+    /**
+     * Converts this DTO into a Task entity for updates.
+     * Note: The ID is not included and must be handled separately by the service layer.
+     *
+     * @return A Task entity with the updated field values
+     */
     public Task toEntity() {
         return Task.builder()
                 .title(this.title)

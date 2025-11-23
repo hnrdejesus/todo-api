@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO for task responses.
+ * Represents the complete task data returned by API endpoints.
+ * Includes all task fields along with metadata like timestamps.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -26,6 +31,13 @@ public class TaskResponseDTO {
 
     private LocalDateTime updatedAt;
 
+    /**
+     * Creates a response DTO from a Task entity.
+     * Maps all entity fields to the DTO structure.
+     *
+     * @param task The task entity to convert
+     * @return A response DTO containing the task data
+     */
     public static TaskResponseDTO from(Task task) {
         return TaskResponseDTO.builder()
                 .id(task.getId())
